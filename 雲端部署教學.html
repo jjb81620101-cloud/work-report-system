@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>雲端部署教學</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: #f7fafc; color: #2d3748;
+      max-width: 820px; margin: 0 auto; padding: 40px 24px 80px;
+      line-height: 1.75;
+    }
+    h1 { font-size: 1.8rem; border-bottom: 3px solid #4299e1; padding-bottom: 12px; margin-bottom: 10px; }
+    .subtitle { color: #718096; margin-bottom: 32px; font-size: 0.95rem; }
+    h2 { font-size: 1.15rem; color: #2b6cb0; margin: 36px 0 12px; display: flex; align-items: center; gap: 8px; }
+    h3 { font-size: 0.98rem; color: #4a5568; margin: 18px 0 8px; }
+    p, li { margin: 6px 0; }
+    ul, ol { padding-left: 22px; }
+    code {
+      background: #edf2f7; border-radius: 4px;
+      padding: 2px 7px; font-size: 0.86em;
+      font-family: "Courier New", monospace; color: #c53030;
+    }
+    pre {
+      background: #1a202c; color: #e2e8f0;
+      border-radius: 10px; padding: 16px 20px;
+      font-size: 0.87rem; line-height: 1.7;
+      overflow-x: auto; margin: 10px 0 18px;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+    .box {
+      background: #fff; border-radius: 12px;
+      border: 1px solid #e2e8f0; padding: 18px 22px;
+      margin: 14px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .step { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 10px; }
+    .num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #4299e1; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 700; flex-shrink: 0; margin-top: 2px;
+    }
+    .info  { background: #ebf8ff; border: 1px solid #bee3f8; color: #2c5282; border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 0.92rem; }
+    .warn  { background: #fffbeb; border: 1px solid #f6e05e; color: #744210; border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 0.92rem; }
+    .ok    { background: #f0fff4; border: 1px solid #9ae6b4; color: #22543d; border-radius: 10px; padding: 12px 16px; margin: 14px 0; font-size: 0.92rem; }
+    .badge {
+      display: inline-block; border-radius: 6px;
+      padding: 2px 9px; font-size: 0.78rem; font-weight: 700;
+      margin-right: 4px;
+    }
+    .badge.free { background: #c6f6d5; color: #22543d; }
+    .badge.req  { background: #fed7d7; color: #822727; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 10px 0; }
+    th { background: #edf2f7; padding: 9px 13px; text-align: left; font-weight: 600; }
+    td { padding: 9px 13px; border-bottom: 1px solid #e2e8f0; }
+  </style>
+</head>
+<body>
+
+<h1>🚀 雲端部署教學</h1>
+<p class="subtitle">將工作回報系統部署到網路上，讓同事用手機行動網路也能填寫。</p>
+
+<div class="info">
+  <strong>三個服務全部免費：</strong><br>
+  <span class="badge free">免費</span><strong>GitHub</strong> — 存放程式碼 ・
+  <span class="badge free">免費</span><strong>Render</strong> — 執行伺服器 ・
+  <span class="badge free">免費</span><strong>Cloudinary</strong> — 儲存照片
+</div>
+
+<!-- ══ STEP 1：GitHub ══════════════════════════════════════ -->
+<h2>① 把程式碼上傳到 GitHub</h2>
+
+<div class="box">
+  <div class="step"><div class="num">1</div><div>前往 <strong>github.com</strong> 登入（或免費註冊）</div></div>
+  <div class="step"><div class="num">2</div><div>點右上角 <code>+</code> → <strong>New repository</strong><br>
+    名稱填 <code>work-report-system</code>，選 <strong>Private</strong>（私人），建立</div></div>
+  <div class="step"><div class="num">3</div><div>打開 PowerShell，切到你的資料夾：
+    <pre><code>cd "$env:USERPROFILE\Documents\Claude\Projects\線上工作回報系統"</code></pre>
+  </div></div>
+  <div class="step"><div class="num">4</div><div>依序執行（把 <code>你的帳號</code> 換成你的 GitHub 帳號名稱）：
+    <pre><code>git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/你的帳號/work-report-system.git
+git push -u origin main</code></pre>
+  </div></div>
+</div>
+
+<div class="warn">⚠️ <code>credentials.json</code> 已在 .gitignore 裡，<strong>不會</strong>被上傳，放心。</div>
+
+<!-- ══ STEP 2：Google Drive ════════════════════════════════ -->
+<h2>② 照片存在 Google Drive（不用額外設定）</h2>
+
+<div class="ok">
+  ✅ 照片會自動存到你 Google Drive 的「<strong>工作回報照片</strong>」資料夾，依年月/日期分層整理。<br>
+  只要 <code>credentials.json</code> 已設定好，Drive 照片上傳完全自動，<strong>不需要額外帳號</strong>。
+</div>
+
+<!-- ══ STEP 3：Google Sheets ══════════════════════════════ -->
+<h2>③ 設定 Google Sheets（如果還沒設定）</h2>
+
+<div class="info">如果你已經在本機設定好 <code>credentials.json</code>，直接跳到下一步。</div>
+
+<div class="box">
+  依照 <strong>設定說明.html</strong> 的第三步完成 Google Sheets 設定，取得 <code>credentials.json</code>。<br><br>
+  然後用文字編輯器（記事本）打開 <code>credentials.json</code>，<strong>複製全部內容</strong>備用（下一步要貼進 Render）。
+</div>
+
+<!-- ══ STEP 4：Render ════════════════════════════════════ -->
+<h2>④ 在 Render 部署伺服器</h2>
+
+<div class="box">
+  <div class="step"><div class="num">1</div><div>前往 <strong>render.com</strong> 免費註冊，用 GitHub 帳號登入</div></div>
+  <div class="step"><div class="num">2</div><div>點 <strong>New +</strong> → <strong>Web Service</strong></div></div>
+  <div class="step"><div class="num">3</div><div>選 <strong>Connect a repository</strong>，連結你的 <code>work-report-system</code></div></div>
+  <div class="step"><div class="num">4</div><div>填寫以下設定：
+    <table>
+      <tr><th>欄位</th><th>填入值</th></tr>
+      <tr><td>Name</td><td><code>work-report</code>（任意）</td></tr>
+      <tr><td>Runtime</td><td>Python 3</td></tr>
+      <tr><td>Build Command</td><td><code>pip install -r requirements.txt</code></td></tr>
+      <tr><td>Start Command</td><td><code>python server.py</code></td></tr>
+      <tr><td>Instance Type</td><td><strong>Free</strong></td></tr>
+    </table>
+  </div></div>
+  <div class="step"><div class="num">5</div><div>往下找到 <strong>Environment Variables</strong>，新增以下四個變數：
+    <table>
+      <tr><th>Key（名稱）</th><th>Value（值）</th></tr>
+      <tr><td><code>GOOGLE_CREDENTIALS</code></td><td>credentials.json 的<strong>全部內容</strong>（整個 JSON 貼上）</td></tr>
+    </table>
+  </div></div>
+  <div class="step"><div class="num">6</div><div>點 <strong>Create Web Service</strong>，等待 2~3 分鐘部署完成</div></div>
+</div>
+
+<div class="ok">
+  ✅ 部署完成後，Render 會給你一個網址，例如：<br>
+  <code>https://work-report.onrender.com</code><br><br>
+  把這個網址傳給同事，任何網路、任何手機都能使用！
+</div>
+
+<!-- ══ 注意事項 ════════════════════════════════════════════ -->
+<h2>⑤ 注意事項</h2>
+
+<div class="warn">
+  <strong>免費版會休眠：</strong>Render 免費方案在 15 分鐘沒人使用後會進入休眠，下次有人開啟時需要等約 30 秒才會醒來。這是正常現象，不影響資料安全。
+</div>
+
+<div class="box">
+  <h3>如何更新程式碼？</h3>
+  只要在 PowerShell 執行：
+  <pre><code>git add .
+git commit -m "update"
+git push</code></pre>
+  Render 會自動偵測到並重新部署，約 2 分鐘完成。
+</div>
+
+<div class="box">
+  <h3>Google Sheets 試算表名稱</h3>
+  試算表<strong>必須</strong>命名為「<code>工作回報系統</code>」（完全一致），且已將服務帳號 email 加入共用（編輯者權限）。
+</div>
+
+</body>
+</html>

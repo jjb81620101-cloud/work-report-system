@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>工作回報系統</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans TC", sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      padding: 24px 16px;
+      color: #1a202c;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #2d3748;
+      letter-spacing: 0.03em;
+    }
+    header p {
+      color: #718096;
+      font-size: 0.9rem;
+      margin-top: 6px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #4a5568;
+      margin-bottom: 7px;
+    }
+    .form-group label .required {
+      color: #e53e3e;
+      margin-left: 3px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 480px) {
+      .form-row { grid-template-columns: 1fr; }
+      .card { padding: 20px; }
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    textarea {
+      width: 100%;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      color: #2d3748;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus, textarea:focus {
+      border-color: #4299e1;
+      box-shadow: 0 0 0 3px rgba(66,153,225,0.15);
+      background: #fff;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+      line-height: 1.6;
+    }
+
+    /* 時間區塊 */
+    .time-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .time-group input { flex: 1; }
+    .time-group span {
+      color: #718096;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    /* 照片上傳 */
+    .upload-area {
+      border: 2px dashed #cbd5e0;
+      border-radius: 10px;
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #fafafa;
+    }
+    .upload-area:hover, .upload-area.drag-over {
+      border-color: #4299e1;
+      background: #ebf8ff;
+    }
+    .upload-area input[type="file"] {
+      display: none;
+    }
+    .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+    .upload-area p { color: #718096; font-size: 0.9rem; }
+    .upload-area p strong { color: #4299e1; }
+
+    #preview-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .preview-item {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 2px solid #e2e8f0;
+    }
+    .preview-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .preview-item .remove-btn {
+      position: absolute;
+      top: 2px; right: 2px;
+      background: rgba(0,0,0,0.55);
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* 提交按鈕 */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #4299e1, #3182ce);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+      letter-spacing: 0.05em;
+    }
+    .btn-submit:hover { opacity: 0.92; }
+    .btn-submit:active { transform: scale(0.99); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* 提示訊息 */
+    .alert {
+      display: none;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 0.93rem;
+      font-weight: 500;
+    }
+    .alert.success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+    .alert.error   { background: #fed7d7; color: #742a2a; border: 1px solid #fc8181; }
+
+    /* 後台連結 */
+    .admin-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .admin-link a {
+      color: #718096;
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .admin-link a:hover { color: #4299e1; text-decoration: underline; }
+
+    /* 進度圈 */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.5);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📋 工作回報系統</h1>
+      <p>請填寫工作回報內容，完成後點擊送出</p>
+    </header>
+
+    <div class="card">
+      <div id="alert" class="alert"></div>
+
+      <form id="reportForm" enctype="multipart/form-data">
+
+        <!-- 姓名 -->
+        <div class="form-group">
+          <label>姓名 <span class="required">*</span></label>
+          <input type="text" name="name" id="name" placeholder="請輸入您的姓名" required />
+        </div>
+
+        <!-- 日期 + 時間 -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>日期 <span class="required">*</span></label>
+            <input type="date" name="date" id="date" required />
+          </div>
+          <div class="form-group">
+            <label>工作時間 <span class="required">*</span></label>
+            <div class="time-group">
+              <input type="time" name="start_time" id="start_time" required />
+              <span>至</span>
+              <input type="time" name="end_time" id="end_time" required />
+            </div>
+          </div>
+        </div>
+
+        <!-- 地點 -->
+        <div class="form-group">
+          <label>地點 <span class="required">*</span></label>
+          <input type="text" name="location" id="location" placeholder="請輸入工作地點" required />
+        </div>
+
+        <!-- 原因 -->
+        <div class="form-group">
+          <label>原因 / 問題描述 <span class="required">*</span></label>
+          <textarea name="reason" id="reason" placeholder="說明發生了什麼問題或工作原因..." required></textarea>
+        </div>
+
+        <!-- 解決方法 -->
+        <div class="form-group">
+          <label>解決方法 <span class="required">*</span></label>
+          <textarea name="solution" id="solution" placeholder="說明如何解決問題或完成工作..." required></textarea>
+        </div>
+
+        <!-- 照片上傳 -->
+        <div class="form-group">
+          <label>照片（選填，可多張）</label>
+          <div class="upload-area" id="uploadArea">
+            <input type="file" name="photos" id="photoInput" accept="image/*" multiple />
+            <div class="upload-icon">📷</div>
+            <p><strong>點擊上傳</strong>或將照片拖曳至此</p>
+            <p style="margin-top:4px;font-size:0.82rem;">支援 JPG、PNG、GIF、WEBP（單檔最大 10MB）</p>
+          </div>
+          <div id="preview-container"></div>
+        </div>
+
+        <!-- 送出 -->
+        <button type="submit" class="btn-submit" id="submitBtn">送出回報</button>
+      </form>
+    </div>
+
+    <div class="admin-link">
+      <a href="/admin">→ 進入後台管理</a>
+    </div>
+  </div>
+
+  <script>
+    // 設定今天為預設日期
+    document.getElementById('date').valueAsDate = new Date();
+
+    // ── 照片上傳 ──────────────────────────────────────
+    const uploadArea   = document.getElementById('uploadArea');
+    const photoInput   = document.getElementById('photoInput');
+    const previewCont  = document.getElementById('preview-container');
+    let selectedFiles  = [];
+
+    uploadArea.addEventListener('click', () => photoInput.click());
+
+    uploadArea.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadArea.classList.add('drag-over');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('drag-over'));
+    uploadArea.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadArea.classList.remove('drag-over');
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+
+    photoInput.addEventListener('change', () => {
+      addFiles(Array.from(photoInput.files));
+      photoInput.value = '';
+    });
+
+    function addFiles(files) {
+      files.forEach(f => {
+        if (!f.type.startsWith('image/')) return;
+        if (f.size > 10 * 1024 * 1024) {
+          showAlert(`${f.name} 超過 10MB 限制`, 'error');
+          return;
+        }
+        selectedFiles.push(f);
+        renderPreview(f, selectedFiles.length - 1);
+      });
+    }
+
+    function renderPreview(file, index) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const item = document.createElement('div');
+        item.className = 'preview-item';
+        item.dataset.index = index;
+        item.innerHTML = `
+          <img src="${e.target.result}" alt="preview" />
+          <button class="remove-btn" onclick="removeFile(${index})">✕</button>`;
+        previewCont.appendChild(item);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFile(index) {
+      selectedFiles[index] = null;
+      const item = previewCont.querySelector(`[data-index="${index}"]`);
+      if (item) item.remove();
+    }
+
+    // ── 表單送出 ──────────────────────────────────────
+    document.getElementById('reportForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span>送出中...';
+
+      const formData = new FormData(e.target);
+      // 移除原本的 file input，改用 selectedFiles
+      formData.delete('photos');
+      selectedFiles.filter(Boolean).forEach(f => formData.append('photos', f));
+
+      try {
+        const res = await fetch('/api/submit', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+          showAlert('✅ ' + data.message, 'success');
+          e.target.reset();
+          selectedFiles = [];
+          previewCont.innerHTML = '';
+          document.getElementById('date').valueAsDate = new Date();
+        } else {
+          showAlert('❌ ' + data.message, 'error');
+        }
+      } catch (err) {
+        showAlert('❌ 網路錯誤，請稍後再試', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '送出回報';
+      }
+    });
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alert');
+      el.textContent = msg;
+      el.className = `alert ${type}`;
+      el.style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+  </script>
+</body>
+</html>
