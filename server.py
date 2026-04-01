@@ -24,7 +24,7 @@ SCOPES = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-HEADERS = ['ID', '姓名', '日期', '開始時間', '結束時間', '地點', '原因', '解決方法', '照片URLs', '提交時間']
+HEADERS = ['ID', '姓名', '日期', '開始時間', '結束時間', '地點', '原因', '解決方法', '照片URLs', '提交時間', '照片預覽']
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'heic'}
 MIME_MAP = {
     'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
@@ -196,13 +196,16 @@ def submit_report():
         return jsonify({'success': False, 'message': 'Google Sheets 未連線，請確認設定'}), 500
     try:
         ws = get_or_create_ws(spreadsheet, date)
+        # 照片預覽：用 =IMAGE() 公式讓 Sheets 直接顯示縮圖
+        photo_formula = f'=IMAGE("{photo_urls[0]}", 1)' if photo_urls else ''
         ws.append_row([
             uuid.uuid4().hex[:8],
             name, date, start_time, end_time,
             location, reason, solution,
-            '\n'.join(photo_urls),
-            taiwan_now()
-        ])
+            '\n'.join(photo_urls),   # 純文字 URL（後台系統用）
+            taiwan_now(),
+            photo_formula            # IMAGE 公式（Sheets 顯示縮圖用）
+        ], value_input_option='USER_ENTERED')
     except Exception as e:
         return jsonify({'success': False, 'message': f'資料寫入失敗：{e}'}), 500
 
