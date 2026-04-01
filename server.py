@@ -175,12 +175,22 @@ def submit_report():
 
     # 上傳照片到 Google Drive
     photo_urls = []
+    photo_errors = []
     files = request.files.getlist('photos')
     if files:
-        folder_id, drive_svc = ensure_drive_folder(date)
+        try:
+            folder_id, drive_svc = ensure_drive_folder(date)
+        except Exception as e:
+            folder_id, drive_svc = None, None
+            photo_errors.append(f"建立資料夾失敗：{e}")
+            print(f"[Drive] 建立資料夾失敗：{e}")
         if folder_id and drive_svc:
             for photo in files:
-                if photo and photo.filename and allowed_file(photo.filename):
+                if photo and photo.filename:
+                    if not allowed_file(photo.filename):
+                        photo_errors.append(f"不支援的格式：{photo.filename}")
+                        print(f"[Drive] 不支援的格式：{photo.filename}")
+                        continue
                     try:
                         ext = photo.filename.rsplit('.', 1)[-1].lower()
                         fname = f"{uuid.uuid4().hex[:8]}.{ext}"
@@ -188,7 +198,11 @@ def submit_report():
                         if url:
                             photo_urls.append(url)
                     except Exception as e:
+                        photo_errors.append(f"上傳失敗：{e}")
                         print(f"[Drive] 照片上傳失敗：{e}")
+        elif not folder_id:
+            photo_errors.append("folder_id 為空，Drive 資料夾建立失敗")
+            print("[Drive] folder_id 為空")
 
     # 寫入 Google Sheets
     spreadsheet = get_spreadsheet()
@@ -209,7 +223,10 @@ def submit_report():
     except Exception as e:
         return jsonify({'success': False, 'message': f'資料寫入失敗：{e}'}), 500
 
-    return jsonify({'success': True, 'message': '回報已成功送出！'})
+    result = {'success': True, 'message': '回報已成功送出！', 'photos_uploaded': len(photo_urls)}
+    if photo_errors:
+        result['photo_errors'] = photo_errors
+    return jsonify(result)
 
 
 @app.route('/api/dates')
